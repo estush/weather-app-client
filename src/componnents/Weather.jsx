@@ -5,34 +5,30 @@ import { getWeather } from '../axios/weather.service';
 
 const Weather = () => {
   // State variables
-  const [inputValue, setInputValue] = useState(''); // Value of the input field
-  const [errorMessage, setErrorMessage] = useState(''); // Error message for validation
-  const [weatherData, setWeatherData] = useState(null); // Weather data from the API
-  const [error, setError] = useState(null); // Error message for API errors
-  const [isSubmitted, setIsSubmitted] = useState(false); // Flag to check if the form is submitted
-  const [isLoading, setIsLoading] = useState(false); // Flag to check if data is being fetched
+  const [inputValue, setInputValue] = useState(''); // Input field value
+  const [error, setError] = useState(''); // General error message
+  const [weatherData, setWeatherData] = useState(null); // Weather data from API
+  const [isSubmitted, setIsSubmitted] = useState(false); // Flag to check if form is submitted
+  const [isLoading, setIsLoading] = useState(false); // Flag to check if data is loading
 
   // Handle form submission
   const handleSubmit = async () => {
-    // Input validation
+    // Input validation checks
     if (!inputValue) {
-      setErrorMessage('Please enter a city name.');
+      setError('Please enter a city name.');
       setWeatherData(null);
-      setError(null);
       setIsSubmitted(false);
     } else if (!/^[a-zA-Z\s]+$/.test(inputValue)) {
-      setErrorMessage('Invalid city name. Please enter only English letters.');
+      setError('Invalid city name. Please enter only English letters.');
       setWeatherData(null);
-      setError(null);
       setIsSubmitted(false);
     } else {
-      setErrorMessage('');
-      setIsSubmitted(false);
-      setIsLoading(true);
-      setWeatherData(null);
-      setError(null);
+      setError(''); // Clear previous error message
+      setIsLoading(true); // Start loading data
+      setIsSubmitted(false); // Reset flag
 
       try {
+        // Fetch weather data from API
         const data = await getWeather(inputValue);
         if (data) {
           setWeatherData(data);
@@ -41,29 +37,30 @@ const Weather = () => {
           setError('No data available for this city.');
         }
       } catch (error) {
-        if (error.response && error.response.status == 400) {
+        // Handle errors thrown by the API
+        if (error.response && error.response.status === 400) {
           setError('City not found. Please check the spelling and try again.');
         } else {
           setError('Failed to fetch weather data.');
         }
       } finally {
-        setIsLoading(false);
+        setIsLoading(false); // End loading data
       }
     }
   };
 
-  // Handle input change
+  // Handle input changes
   const handleInputChange = (e) => {
     const value = e.target.value;
 
     // Check for non-English characters
     if (/[\u0590-\u05FF]/.test(value)) {
-      setErrorMessage('Hebrew letters are not allowed. Please enter only English letters.');
+      setError('Hebrew letters are not allowed. Please enter only English letters.');
     } else {
-      setErrorMessage('');
+      setError('');
     }
 
-    setInputValue(value);
+    setInputValue(value); // Update input field value
   };
 
   return (
@@ -73,7 +70,7 @@ const Weather = () => {
           <img src={Logo} alt="Website logo" className="logo" />
         </div>
         <div className="weather-box">
-          {/* Display message and input field when not submitted or loading */}
+          {/* Display message and input field when the form is not submitted or data is loading */}
           <div className={`weather-info ${isSubmitted || isLoading ? 'hide' : ''}`} aria-live="polite">
             <p>Use our app <br /> to see the weather <br /> around the world</p>
             <h5 id="weather-title">City Name</h5>
@@ -89,14 +86,11 @@ const Weather = () => {
               />
               <button onClick={handleSubmit} aria-label="Check the weather for the entered city">Check</button>
             </div>
-            {errorMessage && <p role="alert" className="error-message">{errorMessage}</p>}
+            {error && <p role="alert" className="error-message">{error}</p>}
             {isLoading && <p role="status" className="note">Loading...</p>}
-            {error && !isLoading && (
-              <p role="alert" className="note">{error}</p>
-            )}
           </div>
 
-          {/* Display weather data when submitted */}
+          {/* Display weather data when the form is submitted */}
           {isSubmitted && weatherData && (
             <div className="weather-display" aria-live="polite">
               <div className="weather-display weather-turquoise">
@@ -106,7 +100,7 @@ const Weather = () => {
                 <h1 className='temp'>{weatherData.temperature}°</h1>
                 <p className='cond'>{weatherData.condition}</p>
                 <div className="weather-details">
-                  {/* Display weather details in a table format */}
+                  {/* Display weather details in a table */}
                   <div className="weather-table">
                     <div className="weather-table-header">
                       <div className="weather-table-cell">Precipitation</div>
@@ -121,7 +115,7 @@ const Weather = () => {
                   </div>
                 </div>
 
-                {/* Display temperature data in a table format */}
+                {/* Display temperature data in a table */}
                 <div className="temperature-table">
                   <div className="temperature-table-header">
                     {weatherData.temperatures.map(t => (
